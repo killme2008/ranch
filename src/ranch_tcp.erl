@@ -57,7 +57,7 @@ listen(Opts) ->
 	%% We set the port to 0 because it is given in the Opts directly.
 	%% The port in the options takes precedence over the one in the
 	%% first argument.
-	gen_tcp:listen(0, ranch:filter_options(Opts4,
+	gen_socket:listen(0, ranch:filter_options(Opts4,
 		[backlog, ip, linger, nodelay, port, raw,
 			send_timeout, send_timeout_close],
 		[binary, {active, false}, {packet, raw},
@@ -66,7 +66,7 @@ listen(Opts) ->
 -spec accept(inet:socket(), timeout())
 	-> {ok, inet:socket()} | {error, closed | timeout | atom()}.
 accept(LSocket, Timeout) ->
-	gen_tcp:accept(LSocket, Timeout).
+	gen_socket:accept(LSocket, Timeout).
 
 -spec accept_ack(inet:socket(), timeout()) -> ok.
 accept_ack(_, _) ->
@@ -77,7 +77,7 @@ accept_ack(_, _) ->
 	inet:port_number(), any())
 	-> {ok, inet:socket()} | {error, atom()}.
 connect(Host, Port, Opts) when is_integer(Port) ->
-	gen_tcp:connect(Host, Port,
+	gen_socket:connect(Host, Port,
 		Opts ++ [binary, {active, false}, {packet, raw}]).
 
 %% @todo Probably filter Opts?
@@ -85,18 +85,18 @@ connect(Host, Port, Opts) when is_integer(Port) ->
 	inet:port_number(), any(), timeout())
 	-> {ok, inet:socket()} | {error, atom()}.
 connect(Host, Port, Opts, Timeout) when is_integer(Port) ->
-	gen_tcp:connect(Host, Port,
+	gen_socket:connect(Host, Port,
 		Opts ++ [binary, {active, false}, {packet, raw}],
 		Timeout).
 
 -spec recv(inet:socket(), non_neg_integer(), timeout())
 	-> {ok, any()} | {error, closed | atom()}.
 recv(Socket, Length, Timeout) ->
-	gen_tcp:recv(Socket, Length, Timeout).
+	gen_socket:recv(Socket, Length, Timeout).
 
 -spec send(inet:socket(), iodata()) -> ok | {error, atom()}.
 send(Socket, Packet) ->
-	gen_tcp:send(Socket, Packet).
+	gen_socket:send(Socket, Packet).
 
 -spec sendfile(inet:socket(), file:name_all() | file:fd())
 	-> {ok, non_neg_integer()} | {error, atom()}.
@@ -149,7 +149,7 @@ setopts(Socket, Opts) ->
 -spec controlling_process(inet:socket(), pid())
 	-> ok | {error, closed | not_owner | atom()}.
 controlling_process(Socket, Pid) ->
-	gen_tcp:controlling_process(Socket, Pid).
+	gen_socket:controlling_process(Socket, Pid).
 
 -spec peername(inet:socket())
 	-> {ok, {inet:ip_address(), inet:port_number()}} | {error, atom()}.
@@ -164,8 +164,8 @@ sockname(Socket) ->
 -spec shutdown(inet:socket(), read | write | read_write)
 	-> ok | {error, atom()}.
 shutdown(Socket, How) ->
-	gen_tcp:shutdown(Socket, How).
+	gen_socket:shutdown(Socket, How).
 
 -spec close(inet:socket()) -> ok.
 close(Socket) ->
-	gen_tcp:close(Socket).
+	gen_socket:close(Socket).

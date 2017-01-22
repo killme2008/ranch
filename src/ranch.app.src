@@ -19,6 +19,7 @@
 	{registered, [ranch_sup, ranch_server]},
 	{applications, [
 		kernel,
+        gen_socket,
 		stdlib
 	]},
 	{mod, {ranch_app, []}},
