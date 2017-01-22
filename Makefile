@@ -6,7 +6,6 @@ PROJECT = ranch
 DEPS = gen_socket
 TEST_DEPS = ct_helper
 dep_ct_helper = git https://github.com/extend/ct_helper.git master
-dep_gen_socket = git https://github.com/alibaba/erlang_multi_pollset.git master
 
 # Options.
 
