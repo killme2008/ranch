@@ -142,7 +142,7 @@ sendfile(Socket, RawFile, Offset, Bytes, Opts) ->
 %% @todo Probably filter Opts?
 -spec setopts(inet:socket(), list()) -> ok | {error, atom()}.
 setopts(Socket, Opts) ->
-	inet:setopts(Socket, Opts).
+	gen_socket:setopts(Socket, Opts).
 
 -spec controlling_process(inet:socket(), pid())
 	-> ok | {error, closed | not_owner | atom()}.
@@ -152,12 +152,12 @@ controlling_process(Socket, Pid) ->
 -spec peername(inet:socket())
 	-> {ok, {inet:ip_address(), inet:port_number()}} | {error, atom()}.
 peername(Socket) ->
-	inet:peername(Socket).
+	gen_socket:peername(Socket).
 
 -spec sockname(inet:socket())
 	-> {ok, {inet:ip_address(), inet:port_number()}} | {error, atom()}.
 sockname(Socket) ->
-	inet:sockname(Socket).
+	gen_socket:sockname(Socket).
 
 -spec shutdown(inet:socket(), read | write | read_write)
 	-> ok | {error, atom()}.

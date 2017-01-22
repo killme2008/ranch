@@ -6,7 +6,7 @@
 
 start_link(_, Socket, _, [{pid, TestPid}|TcpOptions]) ->
 	{ok, RealTcpOptions} =
-		inet:getopts(Socket, [Key || {Key, _} <- TcpOptions]),
+		gen_socket:getopts(Socket, [Key || {Key, _} <- TcpOptions]),
 	Pid = spawn_link(?MODULE, init, [TestPid, RealTcpOptions, TcpOptions]),
 	{ok, Pid}.
 
