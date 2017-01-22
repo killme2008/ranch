@@ -32,133 +32,134 @@
 %% ct.
 
 all() ->
-	[brutal_kill, infinity, infinity_trap_exit, timeout, timeout_trap_exit].
+    [brutal_kill, infinity, infinity_trap_exit, timeout, timeout_trap_exit].
 
 init_per_suite(Config) ->
-	ok = application:start(ranch),
-	Config.
+    application:start(gen_socket),
+    ok = application:start(ranch),
+    Config.
 
 end_per_suite(_) ->
-	application:stop(ranch),
-	ok.
+    application:stop(ranch),
+    ok.
 
 %% Tests.
 
 brutal_kill(_) ->
-	Name = brutal_kill,
-	{ok, ListenerSup} = ranch:start_listener(Name, 1,
-		ranch_tcp, [{port, 0}, {shutdown, brutal_kill}],
-		echo_protocol, []),
-	Port = ranch:get_port(Name),
-	{ok, _} = gen_socket:connect("localhost", Port, []),
-	receive after 100 -> ok end,
-	ListenerSupChildren = supervisor:which_children(ListenerSup),
-	{_, ConnsSup, _, _}
-		= lists:keyfind(ranch_conns_sup, 1, ListenerSupChildren),
-	[{_, Pid, _, _}] = supervisor:which_children(ConnsSup),
-	true = is_process_alive(Pid),
-	ranch:stop_listener(Name),
-	receive after 100 -> ok end,
-	false = is_process_alive(Pid),
-	false = is_process_alive(ListenerSup),
-	{error, _} = gen_socket:connect("localhost", Port, []),
-	ok.
+    Name = brutal_kill,
+    {ok, ListenerSup} = ranch:start_listener(Name, 1,
+                                             ranch_tcp, [{port, 0}, {shutdown, brutal_kill}],
+                                             echo_protocol, []),
+    Port = ranch:get_port(Name),
+    {ok, _} = gen_socket:connect("localhost", Port, []),
+    receive after 100 -> ok end,
+    ListenerSupChildren = supervisor:which_children(ListenerSup),
+    {_, ConnsSup, _, _}
+        = lists:keyfind(ranch_conns_sup, 1, ListenerSupChildren),
+    [{_, Pid, _, _}] = supervisor:which_children(ConnsSup),
+    true = is_process_alive(Pid),
+    ranch:stop_listener(Name),
+    receive after 100 -> ok end,
+    false = is_process_alive(Pid),
+    false = is_process_alive(ListenerSup),
+    {error, _} = gen_socket:connect("localhost", Port, []),
+    ok.
 
 infinity(_) ->
-	Name = infinity,
-	{ok, ListenerSup} = ranch:start_listener(Name, 1,
-		ranch_tcp, [{port, 0}, {shutdown, infinity}],
-		echo_protocol, []),
-	Port = ranch:get_port(Name),
-	{ok, _} = gen_socket:connect("localhost", Port, []),
-	receive after 100 -> ok end,
-	ListenerSupChildren = supervisor:which_children(ListenerSup),
-	{_, ConnsSup, _, _}
-		= lists:keyfind(ranch_conns_sup, 1, ListenerSupChildren),
-	[{_, Pid, _, _}] = supervisor:which_children(ConnsSup),
-	true = is_process_alive(Pid),
-	ranch:stop_listener(Name),
-	receive after 100 -> ok end,
-	false = is_process_alive(Pid),
-	false = is_process_alive(ListenerSup),
-	{error, _} = gen_socket:connect("localhost", Port, []),
-	ok.
+    Name = infinity,
+    {ok, ListenerSup} = ranch:start_listener(Name, 1,
+                                             ranch_tcp, [{port, 0}, {shutdown, infinity}],
+                                             echo_protocol, []),
+    Port = ranch:get_port(Name),
+    {ok, _} = gen_socket:connect("localhost", Port, []),
+    receive after 100 -> ok end,
+    ListenerSupChildren = supervisor:which_children(ListenerSup),
+    {_, ConnsSup, _, _}
+        = lists:keyfind(ranch_conns_sup, 1, ListenerSupChildren),
+    [{_, Pid, _, _}] = supervisor:which_children(ConnsSup),
+    true = is_process_alive(Pid),
+    ranch:stop_listener(Name),
+    receive after 100 -> ok end,
+    false = is_process_alive(Pid),
+    false = is_process_alive(ListenerSup),
+    {error, _} = gen_socket:connect("localhost", Port, []),
+    ok.
 
 infinity_trap_exit(_) ->
-	Name = infinity_trap_exit,
-	{ok, ListenerSup} = ranch:start_listener(Name, 1,
-		ranch_tcp, [{port, 0}, {shutdown, infinity}],
-		trap_exit_protocol, []),
-	Port = ranch:get_port(Name),
-	{ok, _} = gen_socket:connect("localhost", Port, []),
-	receive after 100 -> ok end,
-	ListenerSupChildren = supervisor:which_children(ListenerSup),
-	{_, ConnsSup, _, _}
-		= lists:keyfind(ranch_conns_sup, 1, ListenerSupChildren),
-	[{_, Pid, _, _}] = supervisor:which_children(ConnsSup),
-	true = is_process_alive(Pid),
-	%% This call will block infinitely.
-	SpawnPid = spawn(fun() -> ranch:stop_listener(Name) end),
-	receive after 100 -> ok end,
-	%% The protocol traps exit signals, and ignore them, so it won't die.
-	true = is_process_alive(Pid),
-	%% The listener will stay up forever too.
-	true = is_process_alive(ListenerSup),
-	%% We can't connect, though.
-	{error, _} = gen_socket:connect("localhost", Port, []),
-	%% Killing the process unblocks everything.
-	exit(Pid, kill),
-	receive after 100 -> ok end,
-	false = is_process_alive(ListenerSup),
-	false = is_process_alive(SpawnPid),
-	ok.
+    Name = infinity_trap_exit,
+    {ok, ListenerSup} = ranch:start_listener(Name, 1,
+                                             ranch_tcp, [{port, 0}, {shutdown, infinity}],
+                                             trap_exit_protocol, []),
+    Port = ranch:get_port(Name),
+    {ok, _} = gen_socket:connect("localhost", Port, []),
+    receive after 100 -> ok end,
+    ListenerSupChildren = supervisor:which_children(ListenerSup),
+    {_, ConnsSup, _, _}
+        = lists:keyfind(ranch_conns_sup, 1, ListenerSupChildren),
+    [{_, Pid, _, _}] = supervisor:which_children(ConnsSup),
+    true = is_process_alive(Pid),
+    %% This call will block infinitely.
+    SpawnPid = spawn(fun() -> ranch:stop_listener(Name) end),
+    receive after 100 -> ok end,
+    %% The protocol traps exit signals, and ignore them, so it won't die.
+    true = is_process_alive(Pid),
+    %% The listener will stay up forever too.
+    true = is_process_alive(ListenerSup),
+    %% We can't connect, though.
+    {error, _} = gen_socket:connect("localhost", Port, []),
+    %% Killing the process unblocks everything.
+    exit(Pid, kill),
+    receive after 100 -> ok end,
+    false = is_process_alive(ListenerSup),
+    false = is_process_alive(SpawnPid),
+    ok.
 
 %% Same as infinity because the protocol doesn't trap exits.
 timeout(_) ->
-	Name = timeout,
-	{ok, ListenerSup} = ranch:start_listener(Name, 1,
-		ranch_tcp, [{port, 0}, {shutdown, 500}],
-		echo_protocol, []),
-	Port = ranch:get_port(Name),
-	{ok, _} = gen_socket:connect("localhost", Port, []),
-	receive after 100 -> ok end,
-	ListenerSupChildren = supervisor:which_children(ListenerSup),
-	{_, ConnsSup, _, _}
-		= lists:keyfind(ranch_conns_sup, 1, ListenerSupChildren),
-	[{_, Pid, _, _}] = supervisor:which_children(ConnsSup),
-	true = is_process_alive(Pid),
-	ranch:stop_listener(Name),
-	receive after 100 -> ok end,
-	false = is_process_alive(Pid),
-	false = is_process_alive(ListenerSup),
-	{error, _} = gen_socket:connect("localhost", Port, []),
-	ok.
+    Name = timeout,
+    {ok, ListenerSup} = ranch:start_listener(Name, 1,
+                                             ranch_tcp, [{port, 0}, {shutdown, 500}],
+                                             echo_protocol, []),
+    Port = ranch:get_port(Name),
+    {ok, _} = gen_socket:connect("localhost", Port, []),
+    receive after 100 -> ok end,
+    ListenerSupChildren = supervisor:which_children(ListenerSup),
+    {_, ConnsSup, _, _}
+        = lists:keyfind(ranch_conns_sup, 1, ListenerSupChildren),
+    [{_, Pid, _, _}] = supervisor:which_children(ConnsSup),
+    true = is_process_alive(Pid),
+    ranch:stop_listener(Name),
+    receive after 100 -> ok end,
+    false = is_process_alive(Pid),
+    false = is_process_alive(ListenerSup),
+    {error, _} = gen_socket:connect("localhost", Port, []),
+    ok.
 
 timeout_trap_exit(_) ->
-	Name = timeout_trap_exit,
-	{ok, ListenerSup} = ranch:start_listener(Name, 1,
-		ranch_tcp, [{port, 0}, {shutdown, 500}],
-		trap_exit_protocol, []),
-	Port = ranch:get_port(Name),
-	{ok, _} = gen_socket:connect("localhost", Port, []),
-	receive after 100 -> ok end,
-	ListenerSupChildren = supervisor:which_children(ListenerSup),
-	{_, ConnsSup, _, _}
-		= lists:keyfind(ranch_conns_sup, 1, ListenerSupChildren),
-	[{_, Pid, _, _}] = supervisor:which_children(ConnsSup),
-	true = is_process_alive(Pid),
-	%% This call will block for the duration of the shutdown.
-	SpawnPid = spawn(fun() -> ranch:stop_listener(Name) end),
-	receive after 100 -> ok end,
-	%% The protocol traps exit signals, and ignore them, so it won't die.
-	true = is_process_alive(Pid),
-	%% The listener will stay up for now too.
-	true = is_process_alive(ListenerSup),
-	%% We can't connect, though.
-	{error, _} = gen_socket:connect("localhost", Port, []),
-	%% Wait for the timeout to finish and see that everything is killed.
-	receive after 500 -> ok end,
-	false = is_process_alive(Pid),
-	false = is_process_alive(ListenerSup),
-	false = is_process_alive(SpawnPid),
-	ok.
+    Name = timeout_trap_exit,
+    {ok, ListenerSup} = ranch:start_listener(Name, 1,
+                                             ranch_tcp, [{port, 0}, {shutdown, 500}],
+                                             trap_exit_protocol, []),
+    Port = ranch:get_port(Name),
+    {ok, _} = gen_socket:connect("localhost", Port, []),
+    receive after 100 -> ok end,
+    ListenerSupChildren = supervisor:which_children(ListenerSup),
+    {_, ConnsSup, _, _}
+        = lists:keyfind(ranch_conns_sup, 1, ListenerSupChildren),
+    [{_, Pid, _, _}] = supervisor:which_children(ConnsSup),
+    true = is_process_alive(Pid),
+    %% This call will block for the duration of the shutdown.
+    SpawnPid = spawn(fun() -> ranch:stop_listener(Name) end),
+    receive after 100 -> ok end,
+    %% The protocol traps exit signals, and ignore them, so it won't die.
+    true = is_process_alive(Pid),
+    %% The listener will stay up for now too.
+    true = is_process_alive(ListenerSup),
+    %% We can't connect, though.
+    {error, _} = gen_socket:connect("localhost", Port, []),
+    %% Wait for the timeout to finish and see that everything is killed.
+    receive after 500 -> ok end,
+    false = is_process_alive(Pid),
+    false = is_process_alive(ListenerSup),
+    false = is_process_alive(SpawnPid),
+    ok.
