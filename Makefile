@@ -24,7 +24,7 @@ CI_OTP ?= \
 LOCAL_DEPS = ssl
 
 DOC_DEPS = asciideck
-
+DEPS = gen_socket
 TEST_DEPS = ct_helper
 dep_ct_helper = git https://github.com/ninenines/ct_helper master
 
