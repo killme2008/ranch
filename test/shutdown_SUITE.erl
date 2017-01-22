@@ -50,7 +50,7 @@ brutal_kill(_) ->
 		ranch_tcp, [{port, 0}, {shutdown, brutal_kill}],
 		echo_protocol, []),
 	Port = ranch:get_port(Name),
-	{ok, _} = gen_tcp:connect("localhost", Port, []),
+	{ok, _} = gen_socket:connect("localhost", Port, []),
 	receive after 100 -> ok end,
 	ListenerSupChildren = supervisor:which_children(ListenerSup),
 	{_, ConnsSup, _, _}
@@ -61,7 +61,7 @@ brutal_kill(_) ->
 	receive after 100 -> ok end,
 	false = is_process_alive(Pid),
 	false = is_process_alive(ListenerSup),
-	{error, _} = gen_tcp:connect("localhost", Port, []),
+	{error, _} = gen_socket:connect("localhost", Port, []),
 	ok.
 
 infinity(_) ->
@@ -70,7 +70,7 @@ infinity(_) ->
 		ranch_tcp, [{port, 0}, {shutdown, infinity}],
 		echo_protocol, []),
 	Port = ranch:get_port(Name),
-	{ok, _} = gen_tcp:connect("localhost", Port, []),
+	{ok, _} = gen_socket:connect("localhost", Port, []),
 	receive after 100 -> ok end,
 	ListenerSupChildren = supervisor:which_children(ListenerSup),
 	{_, ConnsSup, _, _}
@@ -81,7 +81,7 @@ infinity(_) ->
 	receive after 100 -> ok end,
 	false = is_process_alive(Pid),
 	false = is_process_alive(ListenerSup),
-	{error, _} = gen_tcp:connect("localhost", Port, []),
+	{error, _} = gen_socket:connect("localhost", Port, []),
 	ok.
 
 infinity_trap_exit(_) ->
@@ -90,7 +90,7 @@ infinity_trap_exit(_) ->
 		ranch_tcp, [{port, 0}, {shutdown, infinity}],
 		trap_exit_protocol, []),
 	Port = ranch:get_port(Name),
-	{ok, _} = gen_tcp:connect("localhost", Port, []),
+	{ok, _} = gen_socket:connect("localhost", Port, []),
 	receive after 100 -> ok end,
 	ListenerSupChildren = supervisor:which_children(ListenerSup),
 	{_, ConnsSup, _, _}
@@ -105,7 +105,7 @@ infinity_trap_exit(_) ->
 	%% The listener will stay up forever too.
 	true = is_process_alive(ListenerSup),
 	%% We can't connect, though.
-	{error, _} = gen_tcp:connect("localhost", Port, []),
+	{error, _} = gen_socket:connect("localhost", Port, []),
 	%% Killing the process unblocks everything.
 	exit(Pid, kill),
 	receive after 100 -> ok end,
@@ -120,7 +120,7 @@ timeout(_) ->
 		ranch_tcp, [{port, 0}, {shutdown, 500}],
 		echo_protocol, []),
 	Port = ranch:get_port(Name),
-	{ok, _} = gen_tcp:connect("localhost", Port, []),
+	{ok, _} = gen_socket:connect("localhost", Port, []),
 	receive after 100 -> ok end,
 	ListenerSupChildren = supervisor:which_children(ListenerSup),
 	{_, ConnsSup, _, _}
@@ -131,7 +131,7 @@ timeout(_) ->
 	receive after 100 -> ok end,
 	false = is_process_alive(Pid),
 	false = is_process_alive(ListenerSup),
-	{error, _} = gen_tcp:connect("localhost", Port, []),
+	{error, _} = gen_socket:connect("localhost", Port, []),
 	ok.
 
 timeout_trap_exit(_) ->
@@ -140,7 +140,7 @@ timeout_trap_exit(_) ->
 		ranch_tcp, [{port, 0}, {shutdown, 500}],
 		trap_exit_protocol, []),
 	Port = ranch:get_port(Name),
-	{ok, _} = gen_tcp:connect("localhost", Port, []),
+	{ok, _} = gen_socket:connect("localhost", Port, []),
 	receive after 100 -> ok end,
 	ListenerSupChildren = supervisor:which_children(ListenerSup),
 	{_, ConnsSup, _, _}
@@ -155,7 +155,7 @@ timeout_trap_exit(_) ->
 	%% The listener will stay up for now too.
 	true = is_process_alive(ListenerSup),
 	%% We can't connect, though.
-	{error, _} = gen_tcp:connect("localhost", Port, []),
+	{error, _} = gen_socket:connect("localhost", Port, []),
 	%% Wait for the timeout to finish and see that everything is killed.
 	receive after 500 -> ok end,
 	false = is_process_alive(Pid),

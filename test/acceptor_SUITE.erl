@@ -133,9 +133,9 @@ ssl_accept_error(_) ->
 	[{{acceptor, _, _}, AcceptorPid, _, _}]
 		= supervisor:which_children(AcceptorsSup),
 	true = is_process_alive(AcceptorPid),
-	{ok, Socket} = gen_tcp:connect("localhost", Port,
+	{ok, Socket} = gen_socket:connect("localhost", Port,
 		[binary, {active, false}, {packet, raw}]),
-	ok = gen_tcp:close(Socket),
+	ok = gen_socket:close(Socket),
 	receive after 500 -> ok end,
 	true = is_process_alive(AcceptorPid),
 	ranch:stop_listener(Name).
@@ -205,7 +205,7 @@ tcp_accept_socket(_) ->
 	Ref = make_ref(),
 	Parent = self(),
 	spawn(fun() ->
-		{ok, S} = gen_tcp:listen(0, [binary, {active, false}, {packet, raw},
+		{ok, S} = gen_socket:listen(0, [binary, {active, false}, {packet, raw},
 			{reuseaddr, true}]),
 		{ok, _} = ranch:start_listener(Name, 1,
 			ranch_tcp, [{socket, S}], echo_protocol, []),
@@ -215,12 +215,12 @@ tcp_accept_socket(_) ->
 		Ref -> ok
 	end,
 	Port = ranch:get_port(Name),
-	{ok, Socket} = gen_tcp:connect("localhost", Port,
+	{ok, Socket} = gen_socket:connect("localhost", Port,
 		[binary, {active, false}, {packet, raw}]),
-	ok = gen_tcp:send(Socket, <<"TCP Ranch is working!">>),
-	{ok, <<"TCP Ranch is working!">>} = gen_tcp:recv(Socket, 21, 1000),
+	ok = gen_socket:send(Socket, <<"TCP Ranch is working!">>),
+	{ok, <<"TCP Ranch is working!">>} = gen_socket:recv(Socket, 21, 1000),
 	ok = ranch:stop_listener(Name),
-	{error, closed} = gen_tcp:recv(Socket, 0, 1000),
+	{error, closed} = gen_socket:recv(Socket, 0, 1000),
 	%% Make sure the listener stopped.
 	{'EXIT', _} = begin catch ranch:get_port(Name) end,
 	ok.
@@ -230,12 +230,12 @@ tcp_active_echo(_) ->
 	{ok, _} = ranch:start_listener(Name, 1,
 		ranch_tcp, [{port, 0}], active_echo_protocol, []),
 	Port = ranch:get_port(Name),
-	{ok, Socket} = gen_tcp:connect("localhost", Port,
+	{ok, Socket} = gen_socket:connect("localhost", Port,
 		[binary, {active, false}, {packet, raw}]),
-	ok = gen_tcp:send(Socket, <<"TCP Ranch is working!">>),
-	{ok, <<"TCP Ranch is working!">>} = gen_tcp:recv(Socket, 21, 1000),
+	ok = gen_socket:send(Socket, <<"TCP Ranch is working!">>),
+	{ok, <<"TCP Ranch is working!">>} = gen_socket:recv(Socket, 21, 1000),
 	ok = ranch:stop_listener(Name),
-	{error, closed} = gen_tcp:recv(Socket, 0, 1000),
+	{error, closed} = gen_socket:recv(Socket, 0, 1000),
 	%% Make sure the listener stopped.
 	{'EXIT', _} = begin catch ranch:get_port(Name) end,
 	ok.
@@ -245,12 +245,12 @@ tcp_echo(_) ->
 	{ok, _} = ranch:start_listener(Name, 1,
 		ranch_tcp, [{port, 0}], echo_protocol, []),
 	Port = ranch:get_port(Name),
-	{ok, Socket} = gen_tcp:connect("localhost", Port,
+	{ok, Socket} = gen_socket:connect("localhost", Port,
 		[binary, {active, false}, {packet, raw}]),
-	ok = gen_tcp:send(Socket, <<"TCP Ranch is working!">>),
-	{ok, <<"TCP Ranch is working!">>} = gen_tcp:recv(Socket, 21, 1000),
+	ok = gen_socket:send(Socket, <<"TCP Ranch is working!">>),
+	{ok, <<"TCP Ranch is working!">>} = gen_socket:recv(Socket, 21, 1000),
 	ok = ranch:stop_listener(Name),
-	{error, closed} = gen_tcp:recv(Socket, 0, 1000),
+	{error, closed} = gen_socket:recv(Socket, 0, 1000),
 	%% Make sure the listener stopped.
 	{'EXIT', _} = begin catch ranch:get_port(Name) end,
 	ok.
@@ -379,10 +379,10 @@ tcp_inherit_options(_) ->
 			[{port, 0} | TcpOptions],
 			check_tcp_options, [{pid, self()} | TcpOptions]),
 	Port = ranch:get_port(Name),
-	{ok, Socket} = gen_tcp:connect("localhost", Port,
+	{ok, Socket} = gen_socket:connect("localhost", Port,
 			[binary, {active, true}, {packet, raw}]),
 	receive checked -> ok after 1000 -> error(timeout) end,
-	ok = gen_tcp:close(Socket),
+	ok = gen_socket:close(Socket),
 	ranch:stop_listener(Name).
 
 %% Supervisor tests
@@ -441,7 +441,7 @@ supervisor_clean_child_restart(_) ->
 	after 0 ->
 		error(lsocket_unknown)
 	end,
-	ok = gen_tcp:close(LSocket),
+	ok = gen_socket:close(LSocket),
 	receive after 1000 -> ok end,
 	%% Verify that supervisor and its first two children are alive.
 	true = is_process_alive(Pid),
@@ -478,13 +478,13 @@ supervisor_conns_alive(_) ->
 		error(lsocket_unknown)
 	end,
 	TcpPort = ranch:get_port(Name),
-	{ok, Socket} = gen_tcp:connect("localhost", TcpPort,
+	{ok, Socket} = gen_socket:connect("localhost", TcpPort,
 		[binary, {active, true}, {packet, raw}]),
 	%% Shut the socket down
-	ok = gen_tcp:close(LSocket),
+	ok = gen_socket:close(LSocket),
 	%% Assert that client is still viable.
 	receive {tcp_closed, _} -> error(closed) after 1500 -> ok end,
-	ok = gen_tcp:send(Socket, <<"poke">>),
+	ok = gen_socket:send(Socket, <<"poke">>),
 	receive {tcp_closed, _} -> ok end,
 	_ = erlang:trace(all, false, [all]),
 	ok = clean_traces(),
@@ -544,7 +544,7 @@ supervisor_clean_conns_sup_restart(_) ->
 connect_loop(_, 0, _) ->
 	ok;
 connect_loop(Port, N, Sleep) ->
-	{ok, _} = gen_tcp:connect("localhost", Port,
+	{ok, _} = gen_socket:connect("localhost", Port,
 		[binary, {active, false}, {packet, raw}]),
 	receive after Sleep -> ok end,
 	connect_loop(Port, N - 1, Sleep).
