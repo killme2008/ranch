@@ -206,8 +206,7 @@ tcp_accept_socket(_) ->
     Ref = make_ref(),
     Parent = self(),
     spawn(fun() ->
-                  {ok, S} = gen_socket:listen(0, [binary, {active, false}, {packet, raw},
-                                                  {reuseaddr, true}]),
+                  {ok, S} = gen_socket:listen(0, [{active, false},{reuseaddr, true}]),
                   {ok, _} = ranch:start_listener(Name, 1,
                                                  ranch_tcp, [{socket, S}], echo_protocol, []),
                   Parent ! Ref

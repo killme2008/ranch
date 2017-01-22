@@ -58,10 +58,8 @@ listen(Opts) ->
 	%% The port in the options takes precedence over the one in the
 	%% first argument.
 	gen_socket:listen(0, ranch:filter_options(Opts4,
-		[backlog, ip, linger, nodelay, port, raw,
-			send_timeout, send_timeout_close],
-		[binary, {active, false}, {packet, raw},
-			{reuseaddr, true}, {nodelay, true}])).
+		[backlog, ip, nodelay, port, send_timeout],
+		[{active, false}, {reuseaddr, true}, {nodelay, true}])).
 
 -spec accept(inet:socket(), timeout())
 	-> {ok, inet:socket()} | {error, closed | timeout | atom()}.
